@@ -1,0 +1,12 @@
+.text-left {
+    text-align : left !important;
+}
+
+.label-medium {
+    width: 150px !important;
+}
+
+.label-large {
+    width: 200px !important;
+}
+

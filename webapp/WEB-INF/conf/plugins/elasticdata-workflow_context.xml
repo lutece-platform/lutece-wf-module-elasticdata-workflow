@@ -1,0 +1,28 @@
+<beans xmlns="http://www.springframework.org/schema/beans" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	 <bean id="elasticdata-workflow.workflowEventListener" class="fr.paris.lutece.plugins.elasticdata.modules.workflow.service.listener.WorkflowEventListener"/>
+	 <bean id="elasticdata-workflow.workflowDataSource" class="fr.paris.lutece.plugins.elasticdata.modules.workflow.business.WorkflowDataSource">
+    <property name="id" value="WorkflowDataSource" />
+    <property name="name" value="Historique des workflows" />
+    <property name="targetIndexName" value="dev_workflowdatasource" />
+    <property name="mappings">
+      <value><![CDATA[
+                      {
+                      "mappings": {
+                            "properties": {
+                              "timestamp": {
+                                "type":   "date",
+                                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+                              }
+                            }
+                          }
+                      }
+                      ]]>
+      </value>
+    </property>
+  </bean>
+
+ </beans>
+
+
