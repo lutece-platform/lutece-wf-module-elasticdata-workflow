@@ -2,7 +2,7 @@
     <!-- Plugin Informations -->
     <name>elasticdata-workflow</name>
     <class>fr.paris.lutece.plugins.elasticdata.modules.workflow.service.WorkflowElasticdataSearchPlugin</class>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <documentation/>
     <installation/>
     <changes/>
