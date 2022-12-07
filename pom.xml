@@ -8,7 +8,7 @@
 	<groupId>fr.paris.lutece.plugins</groupId>
 	<artifactId>module-elasticdata-workflow</artifactId>
 	<packaging>lutece-plugin</packaging>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<name>Workflow elasticdata module</name>
 	<repositories>
 		<repository>
@@ -55,7 +55,7 @@
 		<connection>scm:git:https://github.com/lutece-platform/lutece-wf-module-elasticdata-workflow.git</connection>
 		<developerConnection>scm:git:https://github.com/lutece-platform/lutece-wf-module-elasticdata-workflow.git</developerConnection>
 		<url>https://github.com/lutece-platform/lutece-wf-module-elasticdata-workflow.git</url>
-	  <tag>module-elasticdata-workflow-1.0.1</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<description>module elasticdata workflow</description>
 </project>
