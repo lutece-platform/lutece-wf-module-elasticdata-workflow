@@ -5,13 +5,21 @@
 	 <bean id="elasticdata-workflow.workflowDataSource" class="fr.paris.lutece.plugins.elasticdata.modules.workflow.business.WorkflowDataSource">
     <property name="id" value="WorkflowDataSource" />
     <property name="name" value="Historique des workflows" />
-    <property name="targetIndexName" value="dev_workflowdatasource" />
+    <property name="targetIndexName" value="workflowdatasource" />
     <property name="mappings">
       <value><![CDATA[
                       {
                       "mappings": {
                             "properties": {
                               "timestamp": {
+                                "type":   "date",
+                                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+                              },
+                              "workflows.timestamp": {
+                                "type":   "date",
+                                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+                              },
+                              "dateLastUpdate": {
                                 "type":   "date",
                                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
                               }
@@ -24,5 +32,3 @@
   </bean>
 
  </beans>
-
-

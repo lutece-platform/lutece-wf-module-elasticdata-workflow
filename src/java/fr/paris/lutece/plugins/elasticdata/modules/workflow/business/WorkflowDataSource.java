@@ -72,7 +72,6 @@ public class WorkflowDataSource extends AbstractDataSource
     private IWorkflowService _workflowService;
     @Inject
     private IResourceWorkflowService _resourceWorkflowService;
-    private static final String DATA_SOURCE_NAME = "WorkflowDataSource";
 
     @Override
     public List<String> getIdDataObjects( )
@@ -97,7 +96,7 @@ public class WorkflowDataSource extends AbstractDataSource
         for ( Map.Entry<Integer, List<ResourceHistory>> entry : listWorkflowResourceHistory.entrySet( ) )
         {
             int nIdWorkflow = entry.getKey( );
-            Workflow wf = listWorkflow.stream( ).filter( wf2 -> wf2.getId( ) == nIdWorkflow ).findFirst( ).orElse( null );
+            Workflow wf = listWorkflow.stream( ).filter( workflow -> workflow.getId( ) == nIdWorkflow ).findFirst( ).orElse( null );
             String strWorkflowName = wf.getName( );
             List<State> listStates = getStateList( nIdWorkflow );
             List<Action> listActions = getActionList( nIdWorkflow );
@@ -108,39 +107,54 @@ public class WorkflowDataSource extends AbstractDataSource
                 Map<String, List<ResourceHistory>> listResourceHistoryByType = listResourceHistoryIdResource.stream( )
                         .collect( Collectors.groupingBy( rh -> rh.getResourceType( ) ) );
                 listResourceHistoryByType.values( ).stream( ).forEach( listHistory -> {
+
+                    List<WorkflowResourceHistory> listWorkflowHistory = new ArrayList<WorkflowResourceHistory>();
                     List<ResourceHistory> listHistoryOrdered = listHistory.stream( ).sorted( Comparator.comparing( ResourceHistory::getCreationDate ) )
                             .collect( Collectors.toList( ) );
-                    Timestamp lStartingResource = listHistoryOrdered.get( 0 ).getCreationDate( );
-                    Timestamp lstartingDateDuration = lStartingResource;
+                            Timestamp lStartingResource = listHistoryOrdered.get( 0 ).getCreationDate( );
+                            Timestamp lstartingDateDuration = lStartingResource;
+                    
+                    WorkflowDataObject WorkflowDataObject = new WorkflowDataObject( );
+                    WorkflowDataObject.setId( String.valueOf( listHistory.get( 0 ).getIdResource( ) ) );
+                    WorkflowDataObject.setWorkflowName(strWorkflowName);
+                    WorkflowDataObject.setIdWorkflow(nIdWorkflow);
+                    WorkflowDataObject.setTimestamp( listHistoryOrdered.get( 0 ).getCreationDate( ).getTime( ) );
+                    WorkflowDataObject.setIdResource( listHistoryOrdered.get( 0 ).getIdResource( ) );
+                    WorkflowDataObject.setDateLastUpdate(listHistoryOrdered.get( listHistoryOrdered.size( ) - 1 ).getCreationDate( ).getTime( ) );
+         
                     for ( ResourceHistory rh : listHistoryOrdered )
                     {
-                        WorkflowDataObject workflowDataObject = new WorkflowDataObject( );
+                        WorkflowResourceHistory workflowResourceHistory = new WorkflowResourceHistory( );
                         long lTaskDuration = duration( lstartingDateDuration, rh.getCreationDate( ) );
                         long lCompleteDuration = duration( lStartingResource, rh.getCreationDate( ) );
                         ResourceUserHistory ruh = rh.getResourceUserHistory( );
-                        workflowDataObject.setId( String.valueOf( rh.getId( ) ) );
-                        workflowDataObject.setTimestamp( rh.getCreationDate( ).getTime( ) );
-                        workflowDataObject.setIdResource( rh.getIdResource( ) );
-                        workflowDataObject.setResourceType( rh.getResourceType( ) );
-                        workflowDataObject.setUserAccessCode( ruh.getUserAccessCode( ) );
-                        workflowDataObject.setIdWorkflow( nIdWorkflow );
-                        workflowDataObject.setWorkflowName( strWorkflowName );
-                        workflowDataObject.setTaskDuration( lTaskDuration );
-                        workflowDataObject.setCompleteDuration( lCompleteDuration );
+                        workflowResourceHistory.setId( String.valueOf( rh.getId( ) ) );
+                        workflowResourceHistory.setTimestamp( rh.getCreationDate( ).getTime( ) );
+                        workflowResourceHistory.setIdResource( rh.getIdResource( ) );
+                        workflowResourceHistory.setResourceType( rh.getResourceType( ) );
+                        workflowResourceHistory.setUserAccessCode( ruh.getUserAccessCode( ) );
+                        workflowResourceHistory.setIdWorkflow( nIdWorkflow );
+                        workflowResourceHistory.setWorkflowName( strWorkflowName );
+                        workflowResourceHistory.setTaskDuration( lTaskDuration );
+                        workflowResourceHistory.setCompleteDuration( lCompleteDuration );
                         Action action = listActions.stream( ).filter( ac -> ac.getId( ) == rh.getAction( ).getId( ) ).findFirst( ).orElse( null );
                         if ( action != null )
                         {
-                            workflowDataObject.setActionName( action.getName( ) );
-                            workflowDataObject.setIdAction( action.getId( ) );
+                            workflowResourceHistory.setActionName( action.getName( ) );
+                            workflowResourceHistory.setIdAction( action.getId( ) );
                             State stateResourceHistory = listStates.stream( ).filter( st -> st.getId( ) == action.getStateAfter( ).getId( ) ).findFirst( )
                                     .orElse( null );
                             if ( stateResourceHistory != null )
                             {
-                                workflowDataObject.setWorkflowState( stateResourceHistory.getName( ) );
+                                workflowResourceHistory.setWorkflowState( stateResourceHistory.getName( ) );
                             }
                         }
-                        collResult.add( workflowDataObject );
+                        listWorkflowHistory.add( workflowResourceHistory );
                     }
+                    WorkflowDataObject.setLastWorkflowState( listWorkflowHistory.get( listWorkflowHistory.size() - 1 ).getWorkflowState( ) );
+                    WorkflowDataObject.setWorkflows(listWorkflowHistory);  
+                    
+                    collResult.add( WorkflowDataObject );
                 } );
             } );
         }
@@ -157,7 +171,7 @@ public class WorkflowDataSource extends AbstractDataSource
      */
     public void indexDocument( int nIdResource, int nIdTask )
     {
-        DataSourceIncrementalService.addTask( DATA_SOURCE_NAME, String.valueOf( nIdResource ), nIdTask );
+        DataSourceIncrementalService.addTask( this.getId( ) , String.valueOf( nIdResource ), nIdTask );
     }
 
     /**
@@ -171,8 +185,7 @@ public class WorkflowDataSource extends AbstractDataSource
     {
         ResourceHistoryFilter rhf = new ResourceHistoryFilter( );
         rhf.setListIdResources( listIdResource.stream( ).map( idResource -> Integer.valueOf( idResource ) ).collect( Collectors.toList( ) ) );
-        return _resourceHistoryService.getAllHistoryByFilter( rhf ).stream( ).sorted( Comparator.comparing( ResourceHistory::getCreationDate ) )
-                .collect( Collectors.toList( ) );
+        return _resourceHistoryService.getAllHistoryByFilter( rhf ).stream( ).collect( Collectors.toList( ) );
     }
 
     /**

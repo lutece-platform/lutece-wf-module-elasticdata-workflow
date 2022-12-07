@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2002-2021, City of Paris
  * All rights reserved.
@@ -33,22 +34,22 @@
  */
 package fr.paris.lutece.plugins.elasticdata.modules.workflow.business;
 
+import java.util.List;
+
 import fr.paris.lutece.plugins.elasticdata.business.AbstractDataObject;
 
 public class WorkflowDataObject extends AbstractDataObject
 {
 
     private String _strId;
-    private String _strActionName;
-    private String _strWorkflowState;
-    private long _lTaskDuration;
-    private long _lCompleteDuration;
     private int _nIdResource;
-    private String _strResourceType;
-    private String _strUserAccessCode;
     private int _nIdWorkflow;
     private String _strWorkflowName;
-    private int _nIdAction;
+    private String _strLastWorkflowState;
+    private List<WorkflowResourceHistory> _listWorkflows;
+    private String _strConnectionId;
+    private Long _lDateLastUpdate;
+    
 
     /**
      * Returns the id id
@@ -92,151 +93,6 @@ public class WorkflowDataObject extends AbstractDataObject
         return _nIdResource;
     }
 
-    /**
-     * Returns the task Duration
-     * 
-     * @return The task Duration
-     */
-    public long getTaskDuration( )
-    {
-        return _lTaskDuration;
-    }
-
-    /**
-     * Sets the task Duration
-     * 
-     * @param lTaskDuration
-     *            The task Duration
-     */
-    public void setTaskDuration( long lTaskDuration )
-    {
-        _lTaskDuration = lTaskDuration;
-    }
-
-    /**
-     * Returns the full Duration
-     * 
-     * @return The Duration
-     */
-    public long getCompleteDuration( )
-    {
-        return _lCompleteDuration;
-    }
-
-    /**
-     * Sets the full Duration
-     * 
-     * @param lCompleteDuration
-     *            The full Duration
-     */
-    public void setCompleteDuration( long lCompleteDuration )
-    {
-        _lCompleteDuration = lCompleteDuration;
-    }
-
-    /**
-     * Returns the Resource Type
-     * 
-     * @return The Resource Type
-     */
-    public String getResourceType( )
-    {
-        return _strResourceType;
-    }
-
-    /**
-     * Sets the Resource Type
-     * 
-     * @param strResourceType
-     *            The Resource Type
-     */
-    public void setResourceType( String strResourceType )
-    {
-        _strResourceType = strResourceType;
-    }
-
-    /**
-     * Returns the Action name
-     * 
-     * @return The Action Name
-     */
-    public String getActionName( )
-    {
-        return _strActionName;
-    }
-
-    /**
-     * Sets the Action name
-     * 
-     * @param strActionName
-     *            The Action Name
-     */
-    public void setActionName( String strActionName )
-    {
-        _strActionName = strActionName;
-    }
-
-    /**
-     * Returns the Workflow state
-     * 
-     * @return The Workflow state
-     */
-    public String getWorkflowState( )
-    {
-        return _strWorkflowState;
-    }
-
-    /**
-     * Sets the Workflow state
-     * 
-     * @param strWorkflowState
-     *            The Workflow state
-     */
-    public void setWorkflowState( String strWorkflowState )
-    {
-        _strWorkflowState = strWorkflowState;
-    }
-
-    /**
-     * Returns the UserAccessCode
-     * 
-     * @return The UserAccessCode
-     */
-    public String getUserAccessCode( )
-    {
-        return _strUserAccessCode;
-    }
-
-    /**
-     * Sets the UserAccessCode
-     * 
-     * @param strUserAccessCode
-     *            The UserAccessCode
-     */
-    public void setUserAccessCode( String strUserAccessCode )
-    {
-        _strUserAccessCode = strUserAccessCode;
-    }
-
-    public String getWorkflowName( )
-    {
-        return _strWorkflowName;
-    }
-
-    public void setWorkflowName( String strWorkflowName )
-    {
-        _strWorkflowName = strWorkflowName;
-    }
-
-    public int getIdAction( )
-    {
-        return _nIdAction;
-    }
-
-    public void setIdAction( int nIdAction )
-    {
-        _nIdAction = nIdAction;
-    }
 
     public int getIdWorkflow( )
     {
@@ -246,5 +102,104 @@ public class WorkflowDataObject extends AbstractDataObject
     public void setIdWorkflow( int nIdWorkflow )
     {
         _nIdWorkflow = nIdWorkflow;
+    }
+
+    // set listResource;
+    public void setWorkflows( List<WorkflowResourceHistory> listWorkflows )
+    {
+        _listWorkflows = listWorkflows;
+    }
+
+    // get listResource;
+
+    public List<WorkflowResourceHistory> getWorkflows( )
+    {
+        return _listWorkflows;
+    }
+
+    /**
+     * Returns the last Workflow state
+     * 
+     * @return The Last Workflow state
+     */
+    public String getLastWorkflowState( )
+    {
+        return _strLastWorkflowState;
+    }
+
+    /**
+     * Sets the Last Workflow state
+     * 
+     * @param strLastWorkflowState
+     *            The Workflow state
+     */
+    public void setLastWorkflowState( String strLastWorkflowState )
+    {
+        _strLastWorkflowState = strLastWorkflowState;
+    }
+
+    /**
+     * Returns the connection id
+     * 
+     * @return The connection id
+     */
+    public String getConnectionId( )
+    {
+        return _strConnectionId;
+    }
+
+    /**
+     * Sets the connection id
+     * 
+     * @param strConnectionId
+     *            The connection id
+     */
+
+    public void setConnectionId( String strConnectionId )
+    {
+        _strConnectionId = strConnectionId;
+    }
+
+
+    /**
+     * Returns the workflow name
+     * 
+     * @return The workflow name
+     */
+    public String getWorkflowName( )
+    {
+        return _strWorkflowName;
+    }
+
+    /**
+     * Sets the workflow name
+     * 
+     * @param strWorkflowName
+     *            The workflow name
+     */
+    public void setWorkflowName( String strWorkflowName )
+    {
+        _strWorkflowName = strWorkflowName;
+    }
+
+    /**
+     * Returns the date last update
+     * 
+     * @return The date last update
+     */
+    public Long getDateLastUpdate( )
+    {
+        return _lDateLastUpdate;
+    }
+    
+    /**
+     * Sets the date last update
+     * 
+     * @param lDateLastUpdate
+     *            The date last update
+     */
+    public void setDateLastUpdate( Long lDateLastUpdate )
+    {
+        _lDateLastUpdate = lDateLastUpdate;
     }
 }
