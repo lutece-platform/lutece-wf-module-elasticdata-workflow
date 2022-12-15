@@ -73,6 +73,8 @@ public class WorkflowDataSource extends AbstractDataSource
     @Inject
     private IResourceWorkflowService _resourceWorkflowService;
 
+    private static final String DATA_SOURCE_NAME = "WorkflowDataSource";
+    
     @Override
     public List<String> getIdDataObjects( )
     {
@@ -171,7 +173,7 @@ public class WorkflowDataSource extends AbstractDataSource
      */
     public void indexDocument( int nIdResource, int nIdTask )
     {
-        DataSourceIncrementalService.addTask( this.getId( ) , String.valueOf( nIdResource ), nIdTask );
+        DataSourceIncrementalService.addTask( DATA_SOURCE_NAME, String.valueOf( nIdResource ), nIdTask );
     }
 
     /**
