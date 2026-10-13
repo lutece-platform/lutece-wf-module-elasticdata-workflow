@@ -33,63 +33,92 @@
  */
 package fr.paris.lutece.plugins.elasticdata.modules.workflow.service.listener;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import fr.paris.lutece.plugins.elasticdata.business.IndexerAction;
 import fr.paris.lutece.plugins.elasticdata.modules.workflow.business.WorkflowDataSource;
-import fr.paris.lutece.portal.business.event.EventRessourceListener;
 import fr.paris.lutece.portal.business.event.ResourceEvent;
+import fr.paris.lutece.portal.service.event.EventAction;
+import fr.paris.lutece.portal.service.event.Type;
 import fr.paris.lutece.portal.service.util.AppLogService;
-import fr.paris.lutece.portal.service.util.AppPropertiesService;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
-public class WorkflowEventListener implements EventRessourceListener
+/**
+ * Queues the indexing of the workflow resources on resource events
+ */
+@ApplicationScoped
+public class WorkflowEventListener
 {
-    private static final String CONSTANT_FORM_RESPONSE_LISTENER_NAME = "WorkflowEventListener";
-    WorkflowDataSource _WorkflowDataSource = new WorkflowDataSource( );
-    List<String> WorkflowResourceType = new ArrayList<>(
-            Arrays.asList( AppPropertiesService.getProperty( "elasticdata-workflow.workflow.ressource.type.list" ) ) );
+    @Inject
+    private WorkflowDataSource _workflowDataSource;
+    @Inject
+    private ManagedExecutorService _managedExecutor;
+    @Inject
+    @ConfigProperty( name = "elasticdata-workflow.workflow.ressource.type.list" )
+    private Optional<String> _workflowResourceTypes;
+    private List<String> _listWorkflowResourceType;
 
-    @Override
-    public String getName( )
+    /**
+     * Reads the watched resource types, comma separated
+     */
+    @PostConstruct
+    void initResourceTypes( )
     {
-        return CONSTANT_FORM_RESPONSE_LISTENER_NAME;
+        _listWorkflowResourceType = Arrays.stream( StringUtils.split( _workflowResourceTypes.orElse( StringUtils.EMPTY ), ',' ) ).map( String::trim )
+                .collect( Collectors.toList( ) );
     }
 
     /**
-     * {@inheritDoc}
+     * Handles the event for an added resource
+     *
+     * @param event
+     *            the event for the added resource
      */
-    @Override
-    public void addedResource( ResourceEvent event )
+    public void addedResource( @Observes @Type( EventAction.CREATE ) ResourceEvent event )
     {
-        new Thread( ( ) -> {
-            indexResource( event, IndexerAction.TASK_CREATE );
-        } ).start( );
+        _managedExecutor.execute( ( ) -> indexResource( event, IndexerAction.TASK_CREATE ) );
     }
 
     /**
-     * {@inheritDoc}
+     * Handles the event for a deleted resource
+     *
+     * @param event
+     *            the event for the deleted resource
      */
-    @Override
-    public void deletedResource( ResourceEvent event )
+    public void deletedResource( @Observes @Type( EventAction.REMOVE ) ResourceEvent event )
     {
-        new Thread( ( ) -> {
-            indexResource( event, IndexerAction.TASK_DELETE );
-        } ).start( );
+        _managedExecutor.execute( ( ) -> indexResource( event, IndexerAction.TASK_DELETE ) );
     }
 
     /**
-     * {@inheritDoc}
+     * Handles the event for an updated resource
+     *
+     * @param event
+     *            the event for the updated resource
      */
-    @Override
-    public void updatedResource( ResourceEvent event )
+    public void updatedResource( @Observes @Type( EventAction.UPDATE ) ResourceEvent event )
     {
-        new Thread( ( ) -> {
-            indexResource( event, IndexerAction.TASK_CREATE );
-        } ).start( );
+        _managedExecutor.execute( ( ) -> indexResource( event, IndexerAction.TASK_CREATE ) );
     }
 
+    /**
+     * Queues the indexing task of the event resource when its type is watched
+     *
+     * @param event
+     *            the resource event
+     * @param nIdTask
+     *            the indexing task
+     */
     private void indexResource( ResourceEvent event, int nIdTask )
     {
         if ( !checkResourceType( event ) )
@@ -99,16 +128,27 @@ public class WorkflowEventListener implements EventRessourceListener
         try
         {
             int nIdResource = Integer.parseInt( event.getIdResource( ) );
-            _WorkflowDataSource.indexDocument( nIdResource, nIdTask );
+            _workflowDataSource.indexDocument( nIdResource, nIdTask );
         }
         catch( NumberFormatException e )
         {
-            AppLogService.error( "Unable to parse given event id resource to integer " + event.getIdResource( ), e );
+            AppLogService.error( "Unable to parse given event id resource to integer {}", event.getIdResource( ), e );
+        }
+        catch( RuntimeException e )
+        {
+            AppLogService.error( "Unable to queue the indexing of the resource {}", event.getIdResource( ), e );
         }
     }
 
+    /**
+     * Checks whether the event resource type is watched
+     *
+     * @param event
+     *            the resource event
+     * @return true if the resource type is watched
+     */
     private boolean checkResourceType( ResourceEvent event )
     {
-        return WorkflowResourceType.contains( event.getTypeResource( ) );
+        return _listWorkflowResourceType.contains( event.getTypeResource( ) );
     }
 }

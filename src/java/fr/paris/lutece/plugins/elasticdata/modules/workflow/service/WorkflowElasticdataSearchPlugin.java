@@ -35,28 +35,18 @@ package fr.paris.lutece.plugins.elasticdata.modules.workflow.service;
 
 import java.io.Serializable;
 
-import fr.paris.lutece.portal.service.event.ResourceEventManager;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 
+/**
+ * Workflow elasticdata plugin
+ */
 public class WorkflowElasticdataSearchPlugin extends PluginDefaultImplementation implements Serializable
 {
     private static final long serialVersionUID = 3800826921542494176L;
     /** The Constant PLUGIN_NAME. */
     public static final String PLUGIN_NAME = "elasticdata-workflow";
-    // Beans
-    private static final String BEAN_FORM_RESPONSE_EVENT_LISTENER = "elasticdata-workflow.workflowEventListener";
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void init( )
-    {
-        ResourceEventManager.register( SpringContextService.getBean( BEAN_FORM_RESPONSE_EVENT_LISTENER ) );
-    }
 
     /**
      * Return the plugin

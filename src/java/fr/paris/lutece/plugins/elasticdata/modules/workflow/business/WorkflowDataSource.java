@@ -40,7 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import fr.paris.lutece.plugins.elasticdata.business.AbstractDataSource;
 import fr.paris.lutece.plugins.elasticdata.business.DataObject;
 import fr.paris.lutece.plugins.elasticdata.service.DataSourceIncrementalService;
@@ -59,7 +60,13 @@ import fr.paris.lutece.plugins.workflowcore.service.resource.IResourceWorkflowSe
 import fr.paris.lutece.plugins.workflowcore.service.state.IStateService;
 import fr.paris.lutece.plugins.workflowcore.service.workflow.IWorkflowService;
 import fr.paris.lutece.portal.service.workgroup.AdminWorkgroupService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
+/**
+ * Data source of the workflow resource history
+ */
+@ApplicationScoped
 public class WorkflowDataSource extends AbstractDataSource
 {
     @Inject
@@ -73,8 +80,44 @@ public class WorkflowDataSource extends AbstractDataSource
     @Inject
     private IResourceWorkflowService _resourceWorkflowService;
 
-    private static final String DATA_SOURCE_NAME = "WorkflowDataSource";
-    
+    /**
+     * Constructor used by the CDI proxy
+     */
+    public WorkflowDataSource( )
+    {
+    }
+
+    /**
+     * Constructor
+     *
+     * @param strDataSourceId
+     *            the data source id
+     * @param strDataSourceName
+     *            the data source name
+     * @param strDataSourceTargetIndexName
+     *            the target index name
+     * @param strDataSourceMappings
+     *            the index mappings
+     * @param bFullIndexingDaemon
+     *            true if the full indexing daemon indexes this data source
+     */
+    @Inject
+    public WorkflowDataSource( @ConfigProperty( name = "elasticdata-workflow.workflowDataSource.id" ) String strDataSourceId,
+            @ConfigProperty( name = "elasticdata-workflow.workflowDataSource.name" ) String strDataSourceName,
+            @ConfigProperty( name = "elasticdata-workflow.workflowDataSource.targetIndexName" ) String strDataSourceTargetIndexName,
+            @ConfigProperty( name = "elasticdata-workflow.workflowDataSource.mappings" ) String strDataSourceMappings,
+            @ConfigProperty( name = "elasticdata-workflow.workflowDataSource.fullIndexingDaemon", defaultValue = "false" ) boolean bFullIndexingDaemon )
+    {
+        setId( strDataSourceId );
+        setName( strDataSourceName );
+        setTargetIndexName( strDataSourceTargetIndexName );
+        setMappings( strDataSourceMappings );
+        setFullIndexingDaemon( bFullIndexingDaemon );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getIdDataObjects( )
     {
@@ -86,6 +129,9 @@ public class WorkflowDataSource extends AbstractDataSource
         return idResourceList.stream( ).map( idResource -> String.valueOf( idResource ) ).collect( Collectors.toList( ) );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataObject> getDataObjects( List<String> listIdResource )
     {
@@ -173,7 +219,7 @@ public class WorkflowDataSource extends AbstractDataSource
      */
     public void indexDocument( int nIdResource, int nIdTask )
     {
-        DataSourceIncrementalService.addTask( DATA_SOURCE_NAME, String.valueOf( nIdResource ), nIdTask );
+        DataSourceIncrementalService.addTask( getId( ), String.valueOf( nIdResource ), nIdTask );
     }
 
     /**
@@ -204,6 +250,11 @@ public class WorkflowDataSource extends AbstractDataSource
         return _stateService.getListStateByFilter( stateFilter );
     }
 
+    /**
+     * return the list of all workflows
+     *
+     * @return list of workflows
+     */
     private List<Workflow> getWorkflowList( )
     {
         WorkflowFilter filter = new WorkflowFilter( );
